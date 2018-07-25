@@ -6,6 +6,7 @@ import dht
 import ssd1306
 import mwifi
 import mntptime
+import statistics
 
 
 def display_id(line=0):
@@ -31,20 +32,25 @@ def main():
     old_hum = sens.humidity()
 
     print("Measuring temp/humidity...")
-    sens.measure()
-    temp = sens.temperature()
-    hum = sens.humidity()
+    try:
+        sens.measure()
+        temp = sens.temperature()
+        hum = sens.humidity()
 
-    oled.fill(0)
-    if old_temp != temp:
-        oled.text("Temp: %2.1f %+2.1f" % (temp, temp - old_temp), 0, 20)
-    else:
-        oled.text("Temp: %2.1f" % temp, 0, 20)
-    if old_hum != hum:
-        oled.text("Temp: %2.1f %+2.1f" % (hum, hum - old_hum), 0, 30)
-    else:
-        oled.text("Hum: %2.1f" % hum, 0, 30)
-    oled.show()
+        stats.collect(temp, hum, utime.localtime()[2])
+
+        oled.fill(0)
+        if old_temp != temp:
+            oled.text("Temp: %2.1f %+2.1f" % (temp, temp - old_temp), 0, 20)
+        else:
+            oled.text("Temp: %2.1f" % temp, 0, 20)
+        if old_hum != hum:
+            oled.text("Hum: %2.1f %+2.1f" % (hum, hum - old_hum), 0, 30)
+        else:
+            oled.text("Hum: %2.1f" % hum, 0, 30)
+        oled.show()
+    except Exception as e:
+        print(e)
 
     wifi.reconnect()
     if wifi.connected():
@@ -61,6 +67,8 @@ try:
     sens.measure()
 except Exception as e:
     print(e)
+
+stats = statistics.TempStats(sens.temperature(), sens.humidity(), utime.localtime()[2])
 
 # These are pins for built in OLED on D-duino
 i2c = machine.I2C(scl=machine.Pin(4), sda=machine.Pin(5))
