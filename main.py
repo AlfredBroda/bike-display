@@ -26,15 +26,41 @@ def display_time(line=0):
     oled.show()
 
 
+def main():
+    old_temp = sens.temperature()
+    old_hum = sens.humidity()
+
+    print("Measuring temp/humidity...")
+    sens.measure()
+    temp = sens.temperature()
+    hum = sens.humidity()
+
+    oled.fill(0)
+    if old_temp != temp:
+        oled.text("Temp: %2.1f %+2.1f" % (temp, temp - old_temp), 0, 20)
+    else:
+        oled.text("Temp: %2.1f" % temp, 0, 20)
+    if old_hum != hum:
+        oled.text("Temp: %2.1f %+2.1f" % (hum, hum - old_hum), 0, 30)
+    else:
+        oled.text("Hum: %2.1f" % hum, 0, 30)
+    oled.show()
+
+    wifi.reconnect()
+    if wifi.connected():
+        mntptime.settime()
+
+    display_wifi()
+    display_time()
+
+
 # This is pin D0 on D-duino
+# TODO: Free GPIO16 for use by DeepSleep timer
 sens = dht.DHT22(machine.Pin(16))
 try:
     sens.measure()
 except Exception as e:
     print(e)
-
-oldTemp = sens.temperature()
-oldHum = sens.humidity()
 
 # These are pins for built in OLED on D-duino
 i2c = machine.I2C(scl=machine.Pin(4), sda=machine.Pin(5))
@@ -50,37 +76,18 @@ try:
     ssid = pass_file.readline().rstrip('\n')
     pwd = pass_file.readline().rstrip('\n')
     wifi = mwifi.WiFi(ssid, pwd)
-    oled.text("WiFi config OK.", 0, 60)
+    oled.text("WiFi config OK.", 0, 30)
     oled.show()
     wifi.reconnect()
-    if wifi.connected():
-        mntptime.settime()
 except Exception as e:
     print(e)
 
-display_wifi()
-display_time(40)
+display_wifi(40)
+display_time(50)
 
 time.sleep(5)
 
-while True:
-    sens.measure()
-    temp = sens.temperature()
-    hum = sens.humidity()
+tim = machine.Timer(-1)
+tim.init(period=60000, mode=machine.Timer.PERIODIC, callback=lambda t: main())
 
-    oled.fill(0)
-    display_time()
-
-    if oldTemp != temp:
-        oled.text("Temp: %2.1f %+2.1f" % (temp, temp - oldTemp), 0, 20)
-    else:
-        oled.text("Temp: %2.1f" % temp, 0, 20)
-    if oldHum != hum:
-        oled.text("Temp: %2.1f %+2.1f" % (hum, hum - oldHum), 0, 30)
-    else:
-        oled.text("Hum: %2.1f" % hum, 0, 30)
-    oldTemp = temp
-    oldHum = hum
-
-    display_wifi()
-    time.sleep(60)
+main()
