@@ -23,7 +23,9 @@ def display_wifi(line=50):
 
 def display_time(line=0):
     lt = utime.localtime()
-    oled.text("%4d-%02d-%02d %02d:%02d" % (lt[0], lt[1], lt[2], lt[3], lt[4]), 0, line)
+    time_text = "%4d-%02d-%02d %02d:%02d" % (lt[0], lt[1], lt[2], lt[3], lt[4])
+    print(time_text)
+    oled.text(time_text, 0, line)
     oled.show()
 
 
@@ -31,6 +33,7 @@ def main():
     old_temp = sens.temperature()
     old_hum = sens.humidity()
 
+    oled.fill(0)
     print("Measuring temp/humidity...")
     try:
         sens.measure()
@@ -39,15 +42,19 @@ def main():
 
         stats.collect(temp, hum, utime.localtime()[2])
 
-        oled.fill(0)
         if old_temp != temp:
-            oled.text("Temp: %2.1f %+2.1f" % (temp, temp - old_temp), 0, 20)
+            temp_text = "Temp: %2.1f %+2.1f" % (temp, temp - old_temp)
         else:
-            oled.text("Temp: %2.1f" % temp, 0, 20)
+            temp_text = "Temp: %2.1f" % temp
+        print(temp_text)
+        oled.text(temp_text, 0, 20)
+
         if old_hum != hum:
-            oled.text("Hum: %2.1f %+2.1f" % (hum, hum - old_hum), 0, 30)
+            hum_text = "Hum: %2.1f %+2.1f" % (hum, hum - old_hum)
         else:
-            oled.text("Hum: %2.1f" % hum, 0, 30)
+            hum_text = "Hum: %2.1f" % hum
+        print(hum_text)
+        oled.text(hum_text, 0, 30)
         oled.show()
     except Exception as e:
         print(e)
@@ -60,9 +67,8 @@ def main():
     display_time()
 
 
-# This is pin D0 on D-duino
-# TODO: Free GPIO16 for use by DeepSleep timer
-sens = dht.DHT22(machine.Pin(16))
+# This is pin D3 on D-duino
+sens = dht.DHT22(machine.Pin(0))
 try:
     sens.measure()
 except Exception as e:
