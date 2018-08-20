@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import time
 import utime
@@ -43,16 +44,16 @@ def main():
         stats.collect(temp, hum, utime.localtime()[2])
 
         if old_temp != temp:
-            temp_text = "Temp: %2.1f %+2.1f" % (temp, temp - old_temp)
+            temp_text = "T: %2.1f°C %+2.1f" % (temp, temp - old_temp)
         else:
-            temp_text = "Temp: %2.1f" % temp
+            temp_text = "T: %2.1f°C" % temp
         print(temp_text)
         oled.text(temp_text, 0, 20)
 
         if old_hum != hum:
-            hum_text = "Hum: %2.1f %+2.1f" % (hum, hum - old_hum)
+            hum_text = "H: %2.1f%% %+2.1f" % (hum, hum - old_hum)
         else:
-            hum_text = "Hum: %2.1f" % hum
+            hum_text = "H: %2.1f%%" % hum
         print(hum_text)
         oled.text(hum_text, 0, 30)
         oled.show()
