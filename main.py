@@ -33,6 +33,8 @@ def main():
     old_temp = sens.temperature()
     old_hum = sens.humidity()
 
+    Timer.Alarm(_seconds_handler, 1, periodic=True)
+
     oled.fill(0)
     print("Measuring temp/humidity...")
     try:
